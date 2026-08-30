@@ -3,24 +3,55 @@ from PIL import Image
 from scipy.ndimage import rotate, zoom
 
 
+import numpy as np
+from skimage.transform import resize
+
+
 def imresize(image, scale):
-    """Resize an image by a scale factor."""
+    """Resize an image using a scale factor or target dimensions."""
     image = np.asarray(image)
 
-    if scale <= 0:
-        raise ValueError("Scale must be greater than zero.")
+    if isinstance(scale, (tuple, list)):
+        if len(scale) != 2:
+            raise ValueError("Target size must contain height and width.")
 
-    if scale == 1:
-        return image.copy()
+        height, width = scale
 
-    if image.ndim == 2:
-        factors = (scale, scale)
-    elif image.ndim == 3:
-        factors = (scale, scale, 1)
+        if height <= 0 or width <= 0:
+            raise ValueError("Target dimensions must be greater than zero.")
+
+        output_shape = (int(height), int(width))
+
+        if image.ndim == 3:
+            output_shape += (image.shape[2],)
+
     else:
-        raise ValueError("Image must be 2D or 3D.")
+        if scale <= 0:
+            raise ValueError("Scale must be greater than zero.")
 
-    return zoom(image, factors, order=1)
+        output_shape = (
+            int(image.shape[0] * scale),
+            int(image.shape[1] * scale),
+        )
+
+        if image.ndim == 3:
+            output_shape += (image.shape[2],)
+
+    result = resize(
+        image,
+        output_shape,
+        preserve_range=True,
+        anti_aliasing=True,
+    )
+
+    if np.issubdtype(image.dtype, np.integer):
+        result = np.clip(
+            result,
+            np.iinfo(image.dtype).min,
+            np.iinfo(image.dtype).max,
+        ).astype(image.dtype)
+
+    return result
 
 
 def imrotate(image, angle):
