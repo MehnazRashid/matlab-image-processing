@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "matlab-image-processing"
+version = "0.1.0"
+description = "MATLAB-style image processing functions for Python"
+readme = "README.md"
+requires-python = ">=3.10"
+
+dependencies = [
+    "numpy",
+    "scipy",
+    "opencv-python",
+    "scikit-image",
+    "matplotlib"
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
